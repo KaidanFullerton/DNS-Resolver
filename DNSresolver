@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# This is just a script that makes running DNSresolver easier.
+
+python DNSresolver.py "$@"
