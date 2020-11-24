@@ -11,9 +11,9 @@ def struct_packer(name, type):
     #split the domain name into its subdomains
     subdomains = name.split('.')
     if subdomains[-1] == '': subdomains.pop() #remove extra dot if needed
-    formated_name = b''
+    formated_name = ""
     for word in subdomains:
-        formated_name += struct.pack("!B", len(word)) + word.encode('utf-8')
+        formated_name += struct.pack("!B", len(word)) + word
     formated_name += struct.pack("!B", 0)
 
     if(type): #If we are querying for a mail record
