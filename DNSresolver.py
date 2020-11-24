@@ -2,7 +2,7 @@
 
 import socket
 import struct
-import sys # Feel free to use something like argparse rather than sys.argv.
+import sys
 import argparse
 
 def struct_packer(name, type):
