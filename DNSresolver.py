@@ -67,8 +67,8 @@ def parse_record(index, buffer):
     RDlength, = struct.unpack("!H", buffer[index:index+2])
     index += 2
 
-    #NS -> value is name
-    #A  -> value is IP
+    #NS -> Rdata is name
+    #A  -> Rdata is an IP
     #MX 
     Rdata = ""
     if Type == 1: #A
@@ -94,7 +94,7 @@ def query_server(socket, server, host_name, type):
     DNS_query = struct_packer(host_name, type)
     socket.sendto(DNS_query, (server, 53))
 
-    query_response, _ = socket.recvfrom(4096)
+    query_response, _ = socket.recvfrom(4096) #port number that TCP messages come in from
     
     ID, flags, QDcount, ANcount, NScount, ARcount = struct.unpack('!HHHHHH', query_response[0:12])
 
@@ -141,7 +141,7 @@ def query_server_list(sock, server_list, host_name, type):
 
     for (name, ip) in server_list:
         try:
-            print("Querying %s (%s) to look up %s (MX: %r)" % (ip,name,host_name,type))
+            print("Querying %s (%s) to look up %s (MX: %r)" % (ip, name, host_name, type))
             res = query_server(sock, ip, host_name, type)
             return res
         except socket.timeout:
@@ -154,9 +154,9 @@ def main(arguments):
     args = parser.parse_args()
     is_mail = args.m
     hostname = args.hostname
-    # print 'I received the following arguments:', arguments
+  
     print("Input: hostname = %s, querying mail server = %r" % (hostname, is_mail))
-    # read in the root servers to send to iterative resolver.
+
     with open("root-servers.txt", "r") as file:
         root_servers = file.read().splitlines()
 
@@ -169,9 +169,9 @@ def main(arguments):
         res = query_server_list(s, root_servers, hostname, is_mail)
         print("The name %s resolves to %s" % (hostname, res))
     else:
-        mailName = query_server_list(s, root_servers, hostname, is_mail)
-        print("MX answer: %s" % (mailName))
-        res = query_server_list(s, root_servers, mailName, False)
+        mail_name = query_server_list(s, root_servers, hostname, is_mail)
+        print("MX answer: %s" % (mail_name))
+        res = query_server_list(s, root_servers, mail_name, False)
         print("Answer: %s resolves to %s" % (hostname, res))
 
 if __name__ == '__main__':

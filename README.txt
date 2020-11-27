@@ -1,1 +1,1 @@
-This is currently only capatable with Python2. This DOES NOT work with Python3.
+This is currently only compatible with Python2. This DOES NOT work with Python3.
