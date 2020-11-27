@@ -6,6 +6,8 @@ import sys
 import argparse
 
 def struct_packer(name, type):
+    """Returns a DNS query header, according to standards specified in RFC 2929, for a given hostname."""
+
     packed_header = struct.pack("!HHHHHH", 550, 0, 1, 0, 0, 0)
 
     #split the domain name into its subdomains
@@ -33,6 +35,8 @@ class Record:
         self.Rdata = Rdata
 
 def read_name(index, buffer):
+    """Returns a dynamic length name section from a DNS resource record starting from a given index"""
+
     if (buffer[index] == '\0'):
         return ("", index + 1)
     else:
@@ -53,6 +57,8 @@ def read_name(index, buffer):
             return (Name + almost_name, final_idex)
 
 def parse_record(index, buffer):
+    """Returns a Record object storing the Name, Type, and RData fields of a DNS resource record"""
+
     (Name,index) = read_name(index, buffer)
 
     Type, = struct.unpack("!H", buffer[index:index+2])
@@ -83,6 +89,8 @@ def parse_record(index, buffer):
     return record, index
 
 def query_server(socket, server, host_name, type):
+    """Primary function which will query a given hostname and compile a list of all resource records pointing to the next location to query"""
+
     DNS_query = struct_packer(host_name, type)
     socket.sendto(DNS_query, (server, 53))
 
@@ -129,6 +137,8 @@ def query_server(socket, server, host_name, type):
         return query_server_list(socket, new_servers, host_name, type)
 
 def query_server_list(sock, server_list, host_name, type):
+    """Conducts a DNS query for all servers in the given list until it resolves the hostname to an IP address"""
+
     for (name, ip) in server_list:
         try:
             print("Querying %s (%s) to look up %s (MX: %r)" % (ip,name,host_name,type))
@@ -146,7 +156,7 @@ def main(arguments):
     hostname = args.hostname
     # print 'I received the following arguments:', arguments
     print("Input: hostname = %s, querying mail server = %r" % (hostname, is_mail))
-    # read in the root servers to send to your iterative resolver.
+    # read in the root servers to send to iterative resolver.
     with open("root-servers.txt", "r") as file:
         root_servers = file.read().splitlines()
 
