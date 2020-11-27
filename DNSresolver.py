@@ -34,13 +34,13 @@ class Record:
 
 def read_name(index, buffer):
     if (buffer[index] == '\0'):
-        return ("",index+1)
+        return ("", index + 1)
     else:
         first_byte = ord(buffer[index])
         if ((first_byte & (1<<7)) > 0 and (first_byte & (1<<6)) > 0):
-            new_index, = struct.unpack("!H",buffer[index:index+2])
+            new_index, = struct.unpack("!H", buffer[index:index+2])
             new_index = new_index - (1<<15) - (1<<14)
-            (Name,_) = read_name(new_index, buffer)
+            (Name, _) = read_name(new_index, buffer)
             return (Name, index + 2)
         else:
             Name = ""
@@ -53,12 +53,12 @@ def read_name(index, buffer):
             return (Name + almost_name, final_idex)
 
 def parse_record(index, buffer):
-    (Name,index) = read_name(index,buffer)
+    (Name,index) = read_name(index, buffer)
 
-    Type, = struct.unpack("!H", buffer[index:index + 2])
+    Type, = struct.unpack("!H", buffer[index:index+2])
     index += 8
 
-    RDlength, = struct.unpack("!H", buffer[index:index + 2])
+    RDlength, = struct.unpack("!H", buffer[index:index+2])
     index += 2
 
     #NS -> value is name
@@ -66,13 +66,13 @@ def parse_record(index, buffer):
     #MX 
     Rdata = ""
     if Type == 1: #A
-        a1,a2,a3,a4 = struct.unpack("!BBBB",buffer[index:index+4])
-        Rdata = "%s.%s.%s.%s" % (str(a1),str(a2),str(a3),str(a4))
+        a1, a2, a3, a4 = struct.unpack("!BBBB", buffer[index:index+4])
+        Rdata = "%s.%s.%s.%s" % (str(a1), str(a2), str(a3), str(a4))
     elif Type == 2: #NS
-        (name,_) = read_name(index,buffer)
+        (name, _) = read_name(index, buffer)
         Rdata = name
     elif Type == 15: #MX
-        (name,_) = read_name(index+2,buffer)
+        (name, _) = read_name(index+2, buffer)
         Rdata = name
     else: #TODO: Add support for SOA
         Rdata = None
@@ -125,11 +125,11 @@ def query_server(socket, server, host_name, type):
                     ip = j.Rdata
                     break
             if ip is not None:
-                new_servers.append((i.Rdata,ip))
+                new_servers.append((i.Rdata, ip))
         return query_server_list(socket, new_servers, host_name, type)
 
 def query_server_list(sock, server_list, host_name, type):
-    for (name,ip) in server_list:
+    for (name, ip) in server_list:
         try:
             print("Querying %s (%s) to look up %s (MX: %r)" % (ip,name,host_name,type))
             res = query_server(sock, ip, host_name, type)
@@ -139,30 +139,30 @@ def query_server_list(sock, server_list, host_name, type):
 
 def main(arguments):
     parser = argparse.ArgumentParser(description="DNS resolution")
-    parser.add_argument("-m",action="store_true")
+    parser.add_argument("-m", action="store_true")
     parser.add_argument("hostname")
     args = parser.parse_args()
     is_mail = args.m
     hostname = args.hostname
     # print 'I received the following arguments:', arguments
-    print("Input: hostname = %s, querying mail server = %r" % (hostname,is_mail))
+    print("Input: hostname = %s, querying mail server = %r" % (hostname, is_mail))
     # read in the root servers to send to your iterative resolver.
     with open("root-servers.txt", "r") as file:
         root_servers = file.read().splitlines()
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(5)
-    #your_iterative_resolver function call here. 
-    root_servers = map(lambda x: ("root server",x),root_servers)
+
+    root_servers = map(lambda x: ("root server",x), root_servers)
     
     if not is_mail:
         res = query_server_list(s, root_servers, hostname, is_mail)
-        print("The name %s resolves to %s" % (hostname,res))
+        print("The name %s resolves to %s" % (hostname, res))
     else:
         mailName = query_server_list(s, root_servers, hostname, is_mail)
         print("MX answer: %s" % (mailName))
         res = query_server_list(s, root_servers, mailName, False)
-        print("Answer: %s resolves to %s" % (hostname,res))
+        print("Answer: %s resolves to %s" % (hostname, res))
 
 if __name__ == '__main__':
     main(sys.argv)
