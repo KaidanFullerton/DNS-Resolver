@@ -36,21 +36,21 @@ def read_name(index, buffer):
     if (buffer[index] == '\0'):
         return ("",index+1)
     else:
-        firstByte = ord(buffer[index])
-        if ((firstByte & (1<<7)) > 0 and (firstByte & (1<<6)) > 0):
-            newindex, = struct.unpack("!H",buffer[index:index+2])
-            newindex = newindex - (1<<15) - (1<<14)
-            (Name,_) = read_name(newindex,buffer)
-            return (Name,index+2)
+        first_byte = ord(buffer[index])
+        if ((first_byte & (1<<7)) > 0 and (first_byte & (1<<6)) > 0):
+            new_index, = struct.unpack("!H",buffer[index:index+2])
+            new_index = new_index - (1<<15) - (1<<14)
+            (Name,_) = read_name(new_index, buffer)
+            return (Name, index + 2)
         else:
             Name = ""
-            for i in range(firstByte):
+            for i in range(first_byte):
                 index += 1
                 Name += buffer[index]
             Name += "."
             index += 1
-            (almostName,finalIdx) = read_name(index,buffer)
-            return (Name+almostName,finalIdx)
+            (almost_name, final_idex) = read_name(index, buffer)
+            return (Name + almost_name, final_idex)
 
 def parse_record(index, buffer):
     (Name,index) = read_name(index,buffer)
@@ -74,7 +74,7 @@ def parse_record(index, buffer):
     elif Type == 15: #MX
         (name,_) = read_name(index+2,buffer)
         Rdata = name
-    else: #TODO: Add support for MX, SOA
+    else: #TODO: Add support for SOA
         Rdata = None
 
     index += RDlength
@@ -142,10 +142,10 @@ def main(arguments):
     parser.add_argument("-m",action="store_true")
     parser.add_argument("hostname")
     args = parser.parse_args()
-    isMail = args.m
+    is_mail = args.m
     hostname = args.hostname
     # print 'I received the following arguments:', arguments
-    print("Input: hostname = %s, querying mail server = %r" % (hostname,isMail))
+    print("Input: hostname = %s, querying mail server = %r" % (hostname,is_mail))
     # read in the root servers to send to your iterative resolver.
     with open("root-servers.txt", "r") as file:
         root_servers = file.read().splitlines()
@@ -155,11 +155,11 @@ def main(arguments):
     #your_iterative_resolver function call here. 
     root_servers = map(lambda x: ("root server",x),root_servers)
     
-    if not isMail:
-        res = query_server_list(s, root_servers, hostname, isMail)
+    if not is_mail:
+        res = query_server_list(s, root_servers, hostname, is_mail)
         print("The name %s resolves to %s" % (hostname,res))
     else:
-        mailName = query_server_list(s, root_servers, hostname, isMail)
+        mailName = query_server_list(s, root_servers, hostname, is_mail)
         print("MX answer: %s" % (mailName))
         res = query_server_list(s, root_servers, mailName, False)
         print("Answer: %s resolves to %s" % (hostname,res))
